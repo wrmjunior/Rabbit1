@@ -1,0 +1,53 @@
+obs: Não tive tempo para estudar o Couchbase (ja utilizei o Mongo, mas também 
+foi pouco)
+
+## Projetos compartilhados na solution
+
+PageData.DataServices: Contém os serviços comuns de manipulação dos dados, utilizando os servicos de repositorios
+PageData.QueueServices: Contém os serviços de pub/sub da fila do rabbitmq.
+PageData.Repositories: Contém os datasorces/repositorios de acesso ao banco.
+
+## Website: (net core 2.2)
+
+Contém as páginas estáticas que consomem a api.
+Ao navegar entre as páginas, um script js (tracker.js) coleta as informações da página
+e faz um post para api de dados. 
+No post contem informações sobre a página, navegador e parametros da página.
+O projeto serve apenas como hospedagem dos arquivos, pois é necessário um webserver para poder efetuar as chamadas ajax.
+
+## Web Api: (net core 2.2)
+Contém um controller, que fornece tanto a consulta dos dados armazenados quando envia novos dados para a fila do rabbit.
+São 2 ações:
+
+PageDataController.cs
+http://localhost:5004/api/pagedata/
+
+### Post:
+Processa e envia a mensagem recebida para a fila do rabbit
+
+### Get:
+Processa e efetua a consulta na base de dados por meio de servicos/repository pattern.
+Os parametros de entrada são: ip e pageName via querystring. ex: ?ip=192.168.0.1&pageName=Home
+
+### Implementação
+Implementação do serviço do rabbitmq através do projeto PageData.QueueServices.
+Neste classlib temos a implementação core do RabbitMQ, com servico base para publish/subscribers.
+
+A api utiliza o serviço de publish do rabbitmq e através do QueueSettings (injetado no startup.cs) ele alimenta a configuração da fila.
+
+No arquivo appSettings.json é possível definir as opções de configuraçao da fila/banco de dados.
+
+## Web Worker: (net core 2.2)
+
+É uma aplicação do tipo BackgroundService Worker .
+Implementação do serviço do rabbitmq através do projeto PageData.QueueServices.
+É implementada utilizando o mesmo codebase do projeto, porém utilizando o serviço de consumo do rabbitmq.
+
+Para o fluxo básico, ele recebe as mensagens do rabbit para consumir, processa o dado e através de uma Action ele processa a mensagem.
+Essa action grava os dados no banco sql.
+
+No arquivo Worker.cs, metodo StartAsync, é possível ver a implementação de consumo dos itens da fila.
+
+No arquivo program.cs é possível configurar a injecao de dependencia e configurar a implementaçao do webworker.
+
+No arquivo appSettings.json é possível definir as opções de configuraçao da fila/banco de dados.

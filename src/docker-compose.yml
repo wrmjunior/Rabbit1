@@ -1,0 +1,38 @@
+version: "3"
+
+services:
+    rabbitmq:
+        image: rabbitmq:3.8.2-management-alpine
+        hostname: rabbit
+        environment:
+            RABBITMQ_ERLANG_COOKIE: "SWQOKODSQALRPCLNMEQG"
+            RABBITMQ_DEFAULT_USER: "rabbit"
+            RABBITMQ_DEFAULT_PASS: "rabbit"
+            RABBITMQ_DEFAULT_VHOST: "/"
+        ports:
+            - "15672:15672"
+            - "5672:5672"
+            - "5671:5671"
+            - "4369:4369"
+            - "25672:25672"
+        labels:
+            NAME: "rabbitmq"
+        networks:
+            - localhost
+
+    sqlserver:
+        image: "mcr.microsoft.com/mssql/server:2019-CU1-ubuntu-16.04"
+        environment:
+            SA_PASSWORD: "#SAPassword!"
+            ACCEPT_EULA: "Y"
+        ports:
+            - "1433:1433"
+        labels:
+            NAME: "sqlserver"
+        networks:
+            - localhost
+
+networks:
+    localhost:
+      driver: bridge
+
